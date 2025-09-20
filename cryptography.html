@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptography Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #F5F5DC;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .dark-mode {
+            background-color: black;
+            color: white;
+        }
+
+        .start-page {
+            background: url('https://stat2.moneycontrol.com/assets/images/ms/wazirx/wazir_article_img_27.jpg') no-repeat center center/cover;
+            text-align: center;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .container {
+            background-color: #004d00;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            width: 400px;
+            color: white;
+        }
+
+        .btn {
+            background-color: #FFA500;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .input-field {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .dark-mode .container {
+            background-color: #222;
+        }
+
+        .dark-mode .btn {
+            background-color: #555;
+        }
+
+        .title {
+            font-size: 36px;
+            font-weight: bold;
+            color: red;
+        }
+    </style>
+</head>
+<body id="body">
+    <button class="btn" onclick="toggleDarkMode()" style="position: absolute; top: 10px; right: 10px;">Dark Mode</button>
+
+    <div id="startPage" class="start-page">
+        <div class="title">CRYPTOGRAPHY</div>
+        <button class="btn" onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="gamePage" class="container" style="display:none;">
+        <div class="title">Decode the Numbers</div>
+        <div id="encryptedPhrase" class="result"></div>
+        <input id="userInput" class="input-field" type="text" placeholder="Enter your guess">
+        <br><br>
+        <button class="btn" onclick="checkAnswer()">Check Answer</button>
+        <button class="btn" onclick="newPuzzle()">New Puzzle</button>
+        <button class="btn" onclick="giveHint()">Get Hint</button>
+        <button class="btn" onclick="revealAnswer()">Reveal Answer</button>
+        <div id="resultLabel" class="result"></div>
+        <div id="hintLabel" class="hint"></div>
+    </div>
+
+    <script>
+        let phrases = ["I AM HAPPY", "GOOD DAY", "HELLO WORLD", "BE CREATIVE", "STAY POSITIVE"];
+        let currentPhrase = "";
+        let numberMapping = {};
+        let hintIndex = 0;
+
+        function startGame() {
+            document.getElementById("startPage").style.display = "none";
+            document.getElementById("gamePage").style.display = "block";
+            newPuzzle();
+        }
+
+        function generateMapping(phrase) {
+            let uniqueLetters = [...new Set(phrase.replace(/\s+/g, ''))];
+            let numbers = Array.from({ length: 10 }, (_, i) => i.toString());
+            numbers.sort(() => Math.random() - 0.5);
+            numberMapping = {};
+            uniqueLetters.forEach((letter, index) => {
+                numberMapping[letter] = numbers[index];
+            });
+        }
+
+        function encryptPhrase(phrase) {
+            return phrase.split('').map(char => numberMapping[char] || ' ').join('');
+        }
+
+        function newPuzzle() {
+            let randomIndex = Math.floor(Math.random() * phrases.length);
+            currentPhrase = phrases[randomIndex];
+            generateMapping(currentPhrase);
+            document.getElementById("encryptedPhrase").innerText = encryptPhrase(currentPhrase);
+            document.getElementById("resultLabel").innerText = "";
+            document.getElementById("hintLabel").innerText = "";
+            hintIndex = 0;
+            revealSomeHints();
+        }
+
+        function revealSomeHints() {
+            let uniqueLetters = Object.keys(numberMapping);
+            let hintLetters = uniqueLetters.sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 3) + 2);
+            document.getElementById("hintLabel").innerText = hintLetters.map(letter => `Hint: '${letter}' is '${numberMapping[letter]}'`).join('\n');
+        }
+
+        function checkAnswer() {
+            let userAnswer = document.getElementById("userInput").value.toUpperCase().trim();
+            if (userAnswer === currentPhrase) {
+                document.getElementById("resultLabel").innerText = "Correct! Well done!";
+            } else {
+                document.getElementById("resultLabel").innerText = "Wrong answer. Try again!";
+            }
+        }
+
+        function giveHint() {
+            let uniqueLetters = Object.keys(numberMapping);
+            if (hintIndex < uniqueLetters.length) {
+                let letter = uniqueLetters[hintIndex];
+                document.getElementById("hintLabel").innerText += `\nHint: '${letter}' is '${numberMapping[letter]}'`;
+                hintIndex++;
+            }
+        }
+
+        function revealAnswer() {
+            document.getElementById("resultLabel").innerText = `Answer: ${currentPhrase}`;
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+        }
+    </script>
+</body>
+</html>
